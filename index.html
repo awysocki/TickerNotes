@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TickerNotes - Track and manage your securities portfolio with notes. Keep track of stocks, investments, and research all in one place.">
+    <meta name="theme-color" content="#0d6efd">
+    <title>TickerNotes</title>
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure PDF.js worker
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        
+        // Suppress harmless Alpine.js internal errors
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && event.reason.stack && event.reason.stack.includes('cdn.min.js')) {
+                event.preventDefault(); // Suppress Alpine.js internal errors
+            }
+        });
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    
+    <!-- Favicon and Apple Touch Icon -->
+    <link rel="icon" type="image/png" href="/assets/images/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/assets/images/icon-192x192.png">
+    
+    <!-- Apple Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_5.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_8.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_8_Plus.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_X.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_XR.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_XS_Max.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_14.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_15_Pro.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPhone_15_Pro_Max.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_9.7.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_10.2.png" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_10.5.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_Air_10.9.png" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_Mini_8.3.png" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_Pro_11.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/assets/images/splash-iPad_Pro_12.9.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
+    
+    <!-- Alpine.js x-cloak -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-light">
+    <div id="app" x-data="appData()" x-init="init()">
+        
+        <!-- UPDATE AVAILABLE BANNER -->
+        <div x-show="updateAvailable && !updatingApp" 
+             x-transition
+             class="alert alert-info mb-0 rounded-0 text-center" 
+             style="position: sticky; top: 0; z-index: 1050;">
+            <i class="bi bi-arrow-clockwise"></i>
+            A new version is available! 
+            <button @click="updateApp()" class="btn btn-sm btn-info ms-2">
+                Update Now
+            </button>
+            <button @click="updateAvailable = false" class="btn-close btn-close-sm float-end" aria-label="Dismiss"></button>
+        </div>
+        
+        <!-- MAIN APP VIEWS -->
+        <div x-cloak>
+            <!-- Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Main navigation">
+                <div class="container">
+                    <a class="navbar-brand fw-bold" href="#" @click.prevent="navigateTo('securities')">
+                        <i class="bi bi-journal-text"></i> TickerNotes
+                    </a>
+                    <div class="d-flex gap-2">
+                        <!-- Sync Button (only show when there are pending changes) -->
+                        <button 
+                            x-show="syncConnected && pendingOperations > 0" 
+                            class="btn btn-sm position-relative"
+                            :class="syncing ? 'btn-secondary' : 'btn-warning'"
+                            @click="manualSync()"
+                            :disabled="syncing"
+                            title="Sync with Google Drive"
+                        >
+                            <i class="bi" :class="syncing ? 'bi-arrow-repeat' : 'bi-cloud-arrow-up-down'"></i>
+                            <span x-text="syncing ? 'Syncing...' : 'Sync'"></span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <span x-text="pendingOperations"></span>
+                                <span class="visually-hidden">unsynced changes</span>
+                            </span>
+                        </button>
+                        <button class="btn btn-outline-light btn-sm" @click.prevent="navigateTo('settings')" aria-label="Settings">
+                            <i class="bi bi-gear"></i> Settings
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- SECURITIES LIST VIEW -->
+            <main x-show="currentView === 'securities' && !showPinSetupModal && !showPinEntryModal" class="container py-4">
+                <div class="row mb-4">
+                    <div class="col-12 col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Search..."
+                                x-model="searchQuery"
+                                @input.debounce.500ms="loadSecurities()"
+                                aria-label="Search securities"
+                            >
+                            <button 
+                                class="btn btn-outline-secondary" 
+                                type="button"
+                                @click="searchQuery = ''; loadSecurities()"
+                                x-show="searchQuery"
+                                title="Clear search"
+                            >
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 d-flex gap-2 justify-content-end align-items-center">
+                        <label for="sortBy" class="visually-hidden">Sort securities</label>
+                        <select id="sortBy" class="form-select form-select-sm flex-grow-1 flex-md-grow-0" x-model="sortBy" @change="sortSecurities()" aria-label="Sort securities by">
+                            <option value="symbol">Symbol</option>
+                            <option value="watchList">Watch List</option>
+                            <option value="updated">Updated</option>
+                            <option value="dailyChange">Daily Δ</option>
+                            <option value="perShareGain">Per Share</option>
+                            <option value="totalGain">Total</option>
+                        </select>
+                        <button class="btn btn-outline-secondary btn-sm" @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; sortSecurities()" :title="sortDirection === 'asc' ? 'Sort Ascending' : 'Sort Descending'">
+                            <i class="bi" :class="sortDirection === 'asc' ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up'"></i>
+                        </button>
+                        <button class="btn btn-primary flex-shrink-0" @click="showAddModal = true" title="Add Security">
+                            <i class="bi bi-plus-circle"></i> 
+                            <span class="d-none d-sm-inline">Add Security</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Groups/Tabs -->
+                <div x-show="groups?.length > 0 && !loading" class="mt-3">
+                    <ul class="nav nav-pills" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button 
+                                class="nav-link" 
+                                :class="{ 'active': selectedGroupId === null }"
+                                @click="selectGroup(null)"
+                                type="button"
+                                role="tab">
+                                All (<span x-text="securities?.length || 0"></span>)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button 
+                                class="nav-link" 
+                                :class="{ 'active': selectedGroupId === 'no-group' }"
+                                @click="selectGroup('no-group')"
+                                type="button"
+                                role="tab">
+                                No Group (<span x-text="securities?.filter(s => !s.group_id).length || 0"></span>)
+                            </button>
+                        </li>
+                        <template x-for="group in groups" :key="group.id">
+                            <li class="nav-item" role="presentation">
+                                <button 
+                                    class="nav-link" 
+                                    :class="{ 'active': selectedGroupId === group.id }"
+                                    @click="selectGroup(group.id)"
+                                    type="button"
+                                    role="tab">
+                                    <span x-text="group.name + ' (' + (securities?.filter(s => s.group_id === group.id).length || 0) + ')'"></span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div x-show="error" class="alert alert-danger" role="alert" x-text="error"></div>
+
+                <!-- Empty State -->
+                <div x-show="!loading && securities && securities.length === 0 && !error" class="text-center py-5">
+                    <i class="bi bi-journal-text display-1 text-muted"></i>
+                    <h3 class="mt-3">No Securities Yet</h3>
+                    <p class="text-muted">Click "Add Security" to create your first note</p>
+                </div>
+
+                <!-- Card View -->
+                <template x-if="!loading && viewMode === 'cards' && securities && Array.isArray(securities) && securities.length > 0">
+                    <div class="row g-4">
+                        <template x-for="(security, index) in filteredSecurities" :key="index">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card security-card h-100" 
+                                :class="{ 
+                                    'security-inactive': security.is_active == 0,
+                                    'security-watch': security.is_active == 1 && !security.first_purchase_price
+                                }" 
+                                @click="viewNotes(security)">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="card-title text-primary fw-bold mb-0">
+                                                <span x-text="security.symbol"></span>
+                                                <i x-show="security.is_active == 1 && !security.first_purchase_price" class="bi bi-eye ms-1 text-warning" title="Any security that does not have a purchase is considered on the auto watch list"></i>
+                                            </h5>
+                                            <div class="mt-1">
+                                                <span x-show="security.is_active == 1 && !security.first_purchase_price" class="badge bg-warning text-dark" title="Any security that does not have a purchase is considered on the auto watch list">Watch List</span>
+                                                <span 
+                                                    :class="security.group_id && selectedGroupId === null ? 'badge' : 'd-none'" 
+                                                    :style="'background-color: ' + getGroupColor(security.group_id) + '; color: white;'" 
+                                                    x-text="getGroupName(security.group_id)"></span>
+                                            </div>
+                                        </div>
+                                        <div x-show="security.last_sale" class="text-end">
+                                            <div class="fw-bold" x-text="formatCurrency(security.last_sale, 4)"></div>
+                                            <div class="small" :class="security.net_change > 0 ? 'text-success' : (security.net_change < 0 ? 'text-danger' : 'text-muted')">
+                                                <i x-show="security.net_change > 0" class="bi bi-arrow-up"></i>
+                                                <i x-show="security.net_change < 0" class="bi bi-arrow-down"></i>
+                                                <span x-text="security.net_change ? (security.net_change > 0 ? '+' : '') + parseFloat(security.net_change).toFixed(2) : ''"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h6 class="card-subtitle mb-2 text-muted" x-text="security.name"></h6>
+                                    
+                                    <!-- Purchase info and gains/losses -->
+                                    <div x-show="security.first_purchase_price || security.first_quantity" class="mb-2 d-flex gap-2 flex-wrap">
+                                        <span x-show="security.first_purchase_price && security.first_quantity" class="badge bg-secondary" :title="security.first_purchase_date ? 'Purchased on ' + new Date(security.first_purchase_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''">
+                                            Purchase: <span x-text="parseFloat(security.first_quantity).toLocaleString() + '@' + formatCurrency(security.first_purchase_price, 4)"></span>
+                                        </span>
+                                        <span x-show="security.first_purchase_price && !security.first_quantity" class="badge bg-secondary" :title="security.first_purchase_date ? 'Purchased on ' + new Date(security.first_purchase_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''">
+                                            Purchase: <span x-text="formatCurrency(security.first_purchase_price, 4)"></span>
+                                        </span>
+                                        <span x-show="security.first_purchase_price && security.last_sale" 
+                                            class="badge" 
+                                            :class="(parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) >= 0 ? 'bg-gain' : 'bg-loss'"
+                                            x-text="((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) >= 0 ? '▲ +' : '▼ ') + formatCurrency(parseFloat(security.last_sale) - parseFloat(security.first_purchase_price), 4).substring(1) + '/share'"
+                                            title="Per Share Gain/Loss"
+                                        ></span>
+                                        <span x-show="security.first_purchase_price && security.last_sale && security.first_quantity" 
+                                            class="badge" 
+                                            :class="((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)) >= 0 ? 'badge-outline-gain' : 'badge-outline-loss'"
+                                            :title="'Purchased: ' + parseFloat(security.first_quantity).toLocaleString() + ' shares @ ' + formatCurrency(security.first_purchase_price, 4)"
+                                        >
+                                            Total: <span x-text="(((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)) >= 0 ? '▲ +' : '▼ ') + formatCurrency((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)).substring(1)"></span>
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="card-text small" x-text="security.last_note ? (security.last_note.substring(0, 150) + (security.last_note.length > 150 ? '...' : '')) : 'No notes yet'"></p>
+                                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                                        <small class="text-muted" x-show="security.last_note_updated">
+                                            <i class="bi bi-clock"></i>
+                                            <span x-text="formatDate(security.last_note_updated)"></span>
+                                        </small>
+                                        <span x-show="security.is_active == 0" class="badge bg-secondary">Inactive</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- List View -->
+                <template x-if="!loading && viewMode === 'list' && securities && Array.isArray(securities) && securities.length > 0">
+                    <div>
+                        <template x-for="(security, index) in filteredSecurities" :key="index">
+                        <div 
+                            class="security-list-item d-flex justify-content-between align-items-start flex-wrap"
+                            :class="{ 
+                                'security-list-item-alt': index % 2 === 1, 
+                                'security-inactive': security.is_active == 0,
+                                'security-watch': security.is_active == 1 && !security.first_purchase_price
+                            }"
+                            @click="viewNotes(security)"
+                        >
+                            <div class="flex-grow-1" style="min-width: 200px;">
+                                <div class="mb-1">
+                                    <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap">
+                                        <h5 class="mb-0 text-primary fw-bold">
+                                            <span x-text="security.symbol"></span>
+                                            <i x-show="security.is_active == 1 && !security.first_purchase_price" class="bi bi-eye ms-1 text-warning" title="Any security that does not have a purchase is considered on the auto watch list"></i>
+                                        </h5>
+                                        <span x-show="security.is_active == 1 && !security.first_purchase_price" class="badge bg-warning text-dark ms-2" title="Any security that does not have a purchase is considered on the auto watch list">Watch</span>
+                                        <span 
+                                            :class="security.group_id && selectedGroupId === null ? 'badge' : 'd-none'" 
+                                            :style="'background-color: ' + getGroupColor(security.group_id) + '; color: white;'" 
+                                            x-text="getGroupName(security.group_id)"></span>
+                                        <div x-show="security.last_sale && security.last_sale !== '' && security.last_sale !== null" class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold" x-text="formatCurrency(security.last_sale, 4)"></span>
+                                            <span class="small" :class="security.net_change > 0 ? 'text-success' : (security.net_change < 0 ? 'text-danger' : 'text-muted')">
+                                                <i x-show="security.net_change > 0" class="bi bi-arrow-up"></i>
+                                                <i x-show="security.net_change < 0" class="bi bi-arrow-down"></i>
+                                                <span x-text="security.net_change ? (security.net_change > 0 ? '+' : '') + parseFloat(security.net_change).toFixed(2) : ''"></span>
+                                            </span>
+                                        </div>
+                                        <span x-show="security.is_active == 0" class="badge bg-secondary">Inactive</span>
+                                        <!-- Purchase/Gain badges on new line for mobile -->
+                                        <div class="w-100 d-md-none"></div>
+                                        <!-- Show purchase price if available -->
+                                        <span x-show="security.first_purchase_price && security.first_quantity" class="badge bg-secondary" :title="security.first_purchase_date ? 'Purchased on ' + new Date(security.first_purchase_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''">
+                                            <span class="d-none d-sm-inline">Purchase: </span>
+                                            <span x-text="parseFloat(security.first_quantity).toLocaleString() + '@' + formatCurrency(security.first_purchase_price, 4)"></span>
+                                        </span>
+                                        <span x-show="security.first_purchase_price && !security.first_quantity" class="badge bg-secondary" :title="security.first_purchase_date ? 'Purchased on ' + new Date(security.first_purchase_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''">
+                                            <span class="d-none d-sm-inline">Purchase: </span>
+                                            <span x-text="formatCurrency(security.first_purchase_price, 4)"></span>
+                                        </span>
+                                        <!-- Per Share Gain/Loss - always show when we have the data -->
+                                        <span x-show="security.first_purchase_price && security.last_sale" 
+                                            class="badge" 
+                                            :class="(parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) >= 0 ? 'bg-gain' : 'bg-loss'"
+                                            x-text="((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) >= 0 ? '▲ +' : '▼ ') + formatCurrency(parseFloat(security.last_sale) - parseFloat(security.first_purchase_price), 4).substring(1) + '/share'"
+                                            title="Per Share Gain/Loss"
+                                        ></span>
+                                        <!-- Total Gain/Loss - when quantity is present -->
+                                        <span x-show="security.first_purchase_price && security.last_sale && security.first_quantity" 
+                                            class="badge fs-6" 
+                                            :class="((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)) >= 0 ? 'badge-outline-gain' : 'badge-outline-loss'"
+                                            :title="'Purchased: ' + parseFloat(security.first_quantity).toLocaleString() + ' shares @ ' + formatCurrency(security.first_purchase_price, 4)"
+                                        >
+                                            <span class="d-none d-sm-inline">Total: </span>
+                                            <span x-text="(((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)) >= 0 ? '▲ +' : '▼ ') + formatCurrency((parseFloat(security.last_sale) - parseFloat(security.first_purchase_price)) * parseFloat(security.first_quantity)).substring(1)"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="mb-1 text-muted small d-none d-md-inline" x-text="security.name"></p>
+                                <p class="mb-0 small text-truncate" style="max-width: 100%;" x-text="security.last_note || 'No notes yet'"></p>
+                            </div>
+                            <div class="text-end text-muted small d-none d-lg-inline" style="min-width: 150px;" x-show="security.last_note_updated">
+                                <i class="bi bi-clock"></i>
+                                <span x-text="formatDate(security.last_note_updated)"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                </template>
+            </main>
+
+            <!-- NOTES VIEW -->
+            <main x-show="currentView === 'notes'" x-transition class="container py-4">
+                <div class="mb-3">
+                    <button class="btn btn-outline-primary btn-sm" @click="navigateTo('securities')">
+                        <i class="bi bi-arrow-left"></i> Back to Securities
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="securityDetailsLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Security Header -->
+                <div class="card mb-4" x-show="currentSecurity && !securityDetailsLoading">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                            <div class="flex-grow-1">
+                                <h2 class="card-title mb-1" x-text="currentSecurity?.symbol"></h2>
+                                <p class="card-text text-muted mb-3" x-text="currentSecurity?.name"></p>
+                                <div class="d-flex gap-2 flex-wrap mb-3">
+                                    <span x-show="currentSecurity?.sector" class="badge bg-primary">
+                                        <i class="bi bi-building"></i>
+                                        <span x-text="currentSecurity?.sector"></span>
+                                    </span>
+                                    <span x-show="currentSecurity?.industry" class="badge bg-info text-dark">
+                                        <i class="bi bi-briefcase"></i>
+                                        <span x-text="currentSecurity?.industry"></span>
+                                    </span>
+                                    <span x-show="currentSecurity?.exchange" class="badge bg-secondary">
+                                        <i class="bi bi-graph-up"></i>
+                                        <span x-text="currentSecurity?.exchange"></span>
+                                    </span>
+                                </div>
+                                
+                                <!-- Group/Tab Assignment -->
+                                <div class="mb-0">
+                                    <label for="securityGroupSelect" class="form-label small fw-semibold">Group/Tab</label>
+                                    <select class="form-select form-select-sm" id="securityGroupSelect" x-model="currentSecurityGroupId" @change="updateSecurityGroup()">
+                                        <option value="">No Group</option>
+                                        <template x-for="group in groups" :key="group.id">
+                                            <option :value="group.id" x-text="group.name"></option>
+                                        </template>
+                                        <option value="new">+ Create New Group</option>
+                                    </select>
+                                    <div x-show="currentSecurityGroupId === 'new'" class="input-group input-group-sm mt-2">
+                                        <input 
+                                            type="text" 
+                                            class="form-control form-control-sm" 
+                                            x-model="newGroupName"
+                                            placeholder="Enter group name"
+                                            @keyup.enter="createGroupAndAssign()"
+                                        >
+                                        <button 
+                                            class="btn btn-sm btn-primary" 
+                                            @click="createGroupAndAssign()"
+                                            :disabled="!newGroupName || newGroupName.trim() === ''"
+                                        >
+                                            <i class="bi bi-plus-circle"></i> Create
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div x-show="currentSecurity?.last_sale" class="text-end">
+                                <div class="fs-3 fw-bold" x-text="formatCurrency(currentSecurity?.last_sale, 4)"></div>
+                                <div class="d-flex align-items-center justify-content-end gap-1">
+                                    <i x-show="currentSecurity?.net_change > 0" class="bi bi-arrow-up-circle-fill text-success"></i>
+                                    <i x-show="currentSecurity?.net_change < 0" class="bi bi-arrow-down-circle-fill text-danger"></i>
+                                    <span 
+                                        :class="currentSecurity?.net_change > 0 ? 'text-success' : (currentSecurity?.net_change < 0 ? 'text-danger' : 'text-muted')"
+                                        x-text="(currentSecurity?.net_change > 0 ? '+' : '') + parseFloat(currentSecurity?.net_change).toFixed(2)">
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase Information Card -->
+                <div class="card mb-4" x-show="currentSecurity && !securityDetailsLoading">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-cash-coin"></i> Purchase Information
+                        </h5>
+                        <button 
+                            class="btn btn-sm btn-outline-primary" 
+                            @click="editingPurchase = !editingPurchase"
+                            :title="editingPurchase ? 'Cancel editing' : 'Edit purchase information'"
+                        >
+                            <i class="bi" :class="editingPurchase ? 'bi-x-lg' : 'bi-pencil'"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- View Mode -->
+                        <div x-show="!editingPurchase">
+                            <div x-show="!firstPurchaseDate && !firstPurchasePrice && !firstQuantity" class="text-muted">
+                                <p class="mb-0">No purchase information recorded. Click the pencil to add details.</p>
+                            </div>
+                            <div x-show="firstPurchaseDate || firstPurchasePrice || firstQuantity" class="row g-3">
+                                <div class="col-md-4" x-show="firstPurchaseDate">
+                                    <label class="form-label text-muted small">Purchase Date</label>
+                                    <div class="fw-semibold" x-text="formatDate(firstPurchaseDate)"></div>
+                                </div>
+                                <div class="col-md-4" x-show="firstPurchasePrice">
+                                    <label class="form-label text-muted small">Price per Share</label>
+                                    <div class="fw-semibold" x-text="formatCurrency(firstPurchasePrice, 4)"></div>
+                                </div>
+                                <div class="col-md-4" x-show="firstQuantity">
+                                    <label class="form-label text-muted small">Quantity</label>
+                                    <div class="fw-semibold" x-text="parseFloat(firstQuantity).toLocaleString()"></div>
+                                </div>
+                                <div class="col-12" x-show="firstPurchasePrice && currentSecurity?.last_sale">
+                                    <div class="border-top pt-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-muted small">Cost Basis</label>
+                                                <div class="fw-semibold" x-text="formatCurrency(parseFloat(firstPurchasePrice) * (parseFloat(firstQuantity) || 1))"></div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-muted small">Total</label>
+                                                <div 
+                                                    class="fw-bold fs-5" 
+                                                    :class="currentSecurity?.last_sale && ((parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice)) * (parseFloat(firstQuantity) || 1)) >= 0 ? 'text-gain' : 'text-loss'"
+                                                    :title="currentSecurity?.last_sale ? ('Per Share: ' + ((parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice)) >= 0 ? '▲ +' : '▼ ') + formatCurrency(parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice), 4).substring(1) + ' (' + (((parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice)) / parseFloat(firstPurchasePrice)) * 100).toFixed(1) + '%)') : ''"
+                                                    x-text="currentSecurity?.last_sale ? ((((parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice)) * (parseFloat(firstQuantity) || 1)) >= 0 ? '▲ +' : '▼ ') + formatCurrency((parseFloat(currentSecurity.last_sale) - parseFloat(firstPurchasePrice)) * (parseFloat(firstQuantity) || 1)).substring(1)) : ''"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div x-show="editingPurchase">
+                            <div x-show="purchaseError" class="alert alert-danger mb-3" x-text="purchaseError"></div>
+                            <form @submit.prevent="savePurchaseInfo()">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="editPurchaseDate" class="form-label">Purchase Date</label>
+                                        <input 
+                                            type="date" 
+                                            class="form-control" 
+                                            id="editPurchaseDate"
+                                            x-model="purchaseEdit.date"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="editPurchasePrice" class="form-label">Price per Share</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="editPurchasePrice"
+                                            x-model="purchaseEdit.price"
+                                            placeholder="0.0000"
+                                            step="0.0001"
+                                            min="0"
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="editQuantity" class="form-label">Quantity</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="editQuantity"
+                                            x-model="purchaseEdit.quantity"
+                                            placeholder="0"
+                                            step="0.0001"
+                                            min="0"
+                                        >
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary" :disabled="purchaseLoading">
+                                        <span x-show="purchaseLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                        Save Purchase Info
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Note Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <span x-show="!editingNoteId"><i class="bi bi-plus-circle"></i> Add Note</span>
+                            <span x-show="editingNoteId"><i class="bi bi-pencil"></i> Edit Note</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div x-show="noteError" class="alert alert-danger" role="alert" x-text="noteError"></div>
+                        <form @submit.prevent="saveNote()">
+                            <div class="mb-3">
+                                <textarea 
+                                    class="form-control" 
+                                    rows="4" 
+                                    placeholder="Enter your note..."
+                                    x-model="noteContent"
+                                    required
+                                ></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary" :disabled="noteLoading">
+                                    <span x-show="noteLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                    <span x-text="editingNoteId ? 'Update Note' : 'Add Note'"></span>
+                                </button>
+                                <button x-show="editingNoteId" type="button" class="btn btn-secondary" @click="cancelEdit()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notes List -->
+                <template x-if="!securityDetailsLoading && currentSecurity">
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-journal-text"></i> Notes
+                            </h5>
+                            <div class="d-flex gap-2">
+                                <button 
+                                    class="btn btn-sm"
+                                    :class="securityActiveStatus == 1 ? 'btn-outline-warning' : 'btn-outline-success'"
+                                    @click="toggleSecurityActive()"
+                                    title="Mark as active/inactive"
+                                >
+                                    <i class="bi" :class="securityActiveStatus == 1 ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+                                    <span x-text="securityActiveStatus == 1 ? 'Mark Inactive' : 'Mark Active'"></span>
+                                </button>
+                            <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteSecurity()">
+                                <i class="bi bi-trash"></i> Delete Security
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div x-show="notes.length === 0" class="text-center py-4 text-muted">
+                            No notes yet. Add your first note above.
+                        </div>
+                        
+                        <div class="row g-3">
+                            <template x-for="note in notes" :key="note.id">
+                                <div class="col-12">
+                                    <div class="card note-card" :class="{ 'border-primary border-2': note.is_primary == 1 }">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                    <button 
+                                                        class="btn btn-sm" 
+                                                        :class="note.is_primary == 1 ? 'btn-warning' : 'btn-outline-secondary'"
+                                                        @click="togglePrimary(note)"
+                                                        :title="note.is_primary == 1 ? 'Primary note - shown in list view' : 'Set as primary note for list view'"
+                                                    >
+                                                        <i class="bi" :class="note.is_primary == 1 ? 'bi-star-fill' : 'bi-star'"></i>
+                                                    </button>
+                                                    <span x-show="note.group_name" class="badge" :class="note.group_deleted ? 'bg-secondary' : 'bg-info text-dark'">
+                                                        <i class="bi bi-folder"></i>
+                                                        <span x-text="note.group_name"></span>
+                                                    </span>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock"></i>
+                                                        <span x-text="formatDate(note.created_at)"></span>
+                                                        <span x-show="note.created_at !== note.updated_at" class="ms-2">
+                                                            (edited <span x-text="formatDate(note.updated_at)"></span>)
+                                                        </span>
+                                                    </small>
+                                                </div>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button 
+                                                        class="btn btn-outline-primary" 
+                                                        @click="editNote(note)"
+                                                        title="Edit"
+                                                    >
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button 
+                                                        class="btn btn-outline-danger" 
+                                                        @click="deleteNote(note.id)"
+                                                        title="Delete"
+                                                    >
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p class="card-text" style="white-space: pre-wrap;" x-text="note.content"></p>
+                                            <div x-show="note.is_primary == 1" class="mt-2">
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-star-fill"></i> Primary Note - Shown in List View
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                </template>
+            </main>
+
+            <!-- SETTINGS VIEW -->
+            <main x-show="currentView === 'settings'" x-transition class="container py-4">
+                <div class="mb-3">
+                    <button class="btn btn-outline-primary btn-sm" @click="navigateTo('securities')">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0"><i class="bi bi-gear"></i> Settings</h2>
+                    <div>
+                        <span class="badge bg-secondary" 
+                              style="cursor: pointer;" 
+                              @click="updateApp()"
+                              title="Click to check for updates"
+                              x-text="'v' + appVersion"></span>
+                        <a href="https://github.com/awysocki" target="_blank" class="badge bg-dark text-decoration-none ms-1" title="View GitHub Profile">
+                            <i class="bi bi-github"></i>
+                        </a>
+                        <span x-show="updateAvailable" 
+                              class="badge bg-success ms-1 animate-pulse"
+                              @click="updateApp()"
+                              style="cursor: pointer;"
+                              title="Update available! Click to update">
+                            <i class="bi bi-arrow-clockwise"></i> Update
+                        </span>
+                        <span x-show="updatingApp" class="badge bg-info ms-1">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            Updating...
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link" 
+                            :class="{ 'active': settingsTab === 'display' }"
+                            @click="settingsTab = 'display'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'display'"
+                            aria-controls="display-tab"
+                        >
+                            <i class="bi bi-eye"></i> Display
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link" 
+                            :class="{ 'active': settingsTab === 'security' }"
+                            @click="settingsTab = 'security'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'security'"
+                            aria-controls="security-tab"
+                        >
+                            <i class="bi bi-shield-lock"></i> Security
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link" 
+                            :class="{ 'active': settingsTab === 'groups' }"
+                            @click="settingsTab = 'groups'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'groups'"
+                            aria-controls="groups-tab"
+                        >
+                            <i class="bi bi-folder"></i> Groups
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link"
+                            :class="{ 'active': settingsTab === 'manage' }"
+                            @click="settingsTab = 'manage'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'manage'"
+                            aria-controls="manage-tab"
+                        >
+                            <i class="bi bi-trash"></i> Manage Securities
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link"
+                            :class="{ 'active': settingsTab === 'data' }"
+                            @click="settingsTab = 'data'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'data'"
+                            aria-controls="data-tab"
+                        >
+                            <i class="bi bi-database"></i> Stock Data
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link"
+                            :class="{ 'active': settingsTab === 'import' }"
+                            @click="settingsTab = 'import'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'import'"
+                            aria-controls="import-tab"
+                        >
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link"
+                            :class="{ 'active': settingsTab === 'export' }"
+                            @click="settingsTab = 'export'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'export'"
+                            aria-controls="export-tab"
+                        >
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link" 
+                            :class="{ 'active': settingsTab === 'logs' }"
+                            @click="settingsTab = 'logs'; loadAppLogs()"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'logs'"
+                            aria-controls="logs-tab"
+                        >
+                            <i class="bi bi-journal-text"></i> Logs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button 
+                            class="nav-link" 
+                            :class="{ 'active': settingsTab === 'sync' }"
+                            @click="settingsTab = 'sync'"
+                            type="button"
+                            role="tab"
+                            :aria-selected="settingsTab === 'sync'"
+                            aria-controls="sync-tab"
+                        >
+                            <i class="bi bi-cloud-arrow-up-down"></i> Sync
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Sync Tab -->
+                <div x-show="settingsTab === 'sync'" role="tabpanel" id="sync-tab" :aria-hidden="settingsTab !== 'sync'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-cloud-arrow-up-down"></i> Cloud Sync
+                            </h5>
+                            <p class="text-muted small mb-0">Sync your data across devices using Google Drive</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Google Drive Connection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Google Drive</label>
+                                <div x-show="!syncConnected">
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-primary"
+                                        @click="connectGoogleDrive()"
+                                    >
+                                        <i class="bi bi-google"></i> Connect Google Drive
+                                    </button>
+                                    <div class="form-text">Connect to Google Drive to sync your portfolio across devices. Your data is stored in your private app data folder.</div>
+                                </div>
+                                <div x-show="syncConnected">
+                                    <div class="alert alert-success mb-3">
+                                        <i class="bi bi-check-circle"></i> Connected to Google Drive
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-outline-danger"
+                                        @click="disconnectGoogleDrive()"
+                                    >
+                                        <i class="bi bi-x-circle"></i> Disconnect
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-danger ms-2"
+                                        @click="nuclearCleanGoogleDrive()"
+                                        title="Delete ALL data from Google Drive and disconnect"
+                                    >
+                                        <i class="bi bi-radioactive"></i> Nuclear Clean Google Drive
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sync Check Interval -->
+                            <div x-show="syncConnected" class="mb-4">
+                                <label class="form-label fw-bold">Auto-Check Interval</label>
+                                <p class="text-muted small mb-2">How often to check for updates from other devices</p>
+                                <select 
+                                    class="form-select" 
+                                    x-model.number="syncCheckMinutes"
+                                    @change="updateSyncCheckInterval()"
+                                    style="max-width: 200px;"
+                                >
+                                    <option value="1">Every 1 minute (testing)</option>
+                                    <option value="5">Every 5 minutes</option>
+                                    <option value="10">Every 10 minutes</option>
+                                    <option value="15">Every 15 minutes</option>
+                                    <option value="30">Every 30 minutes</option>
+                                    <option value="60">Every hour</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Sync Status -->
+                            <div x-show="syncConnected" class="mb-4">
+                                <label class="form-label fw-bold">Sync Status</label>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="me-2" x-show="syncing">
+                                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                                        Syncing...
+                                    </span>
+                                    <span x-show="!syncing && lastSyncTime" x-text="'Last synced: ' + lastSyncTime"></span>
+                                    <span x-show="!syncing && !lastSyncTime">Never synced</span>
+                                </div>
+                                <div x-show="pendingOperations > 0" class="alert alert-warning py-2">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    <span x-text="pendingOperations + ' pending operation(s)'"></span>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-primary"
+                                    @click="manualSync()"
+                                    :disabled="syncing"
+                                >
+                                    <i class="bi bi-arrow-repeat"></i> Sync Now
+                                </button>
+                            </div>
+                            
+                            <!-- Runlog Statistics -->
+                            <div x-show="syncConnected" class="mb-4">
+                                <label class="form-label fw-bold">Runlog Statistics</label>
+                                <div class="alert alert-info py-2 mb-2">
+                                    <i class="bi bi-file-earmark-text"></i> 
+                                    <span>Runlog contains <strong x-text="runlogCount"></strong> operation(s)</span>
+                                    <small class="d-block text-muted mt-1">
+                                        Estimated size: ~<span x-text="Math.round(runlogCount * 0.5)"></span>KB
+                                    </small>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-warning btn-sm"
+                                    @click="resetRunlog()"
+                                    :disabled="syncing"
+                                    title="Create snapshot and reset runlog to 0 operations"
+                                >
+                                    <i class="bi bi-arrow-clockwise"></i> Reset Runlog
+                                </button>
+                                <div class="form-text mt-2">
+                                    <strong>⚠️ WARNING:</strong> Reset creates a snapshot and clears the runlog. 
+                                    <strong>ALL DEVICES MUST BE SYNCED FIRST!</strong> 
+                                    We do not check - this is your responsibility.
+                                </div>
+                            </div>
+                            
+                            <!-- Sync Status Message -->
+                            <div x-show="syncStatusMessage" class="alert alert-success mt-3 mb-0">
+                                <i class="bi bi-check-circle"></i> <span x-text="syncStatusMessage"></span>
+                            </div>
+
+                            <!-- Reset Sync State (for troubleshooting) -->
+                            <div class="mt-3" x-show="syncConnected">
+                                <button 
+                                    type="button" 
+                                    class="btn btn-sm btn-outline-warning"
+                                    @click="resetSyncState()"
+                                >
+                                    <i class="bi bi-arrow-clockwise"></i> Force Re-Sync All Data
+                                </button>
+                                <small class="text-muted d-block mt-1">
+                                    Use this if data didn't sync properly. Clears sync history and re-applies all operations.
+                                </small>
+                            </div>
+
+                            <!-- Sync Info -->
+                            <div class="alert alert-info mt-3">
+                                <h6 class="alert-heading"><i class="bi bi-info-circle"></i> How Sync Works</h6>
+                                <ul class="mb-0 small">
+                                    <li>All changes are logged and synced automatically</li>
+                                    <li>Works offline - changes sync when you reconnect</li>
+                                    <li>Data stored in your private Google Drive app folder</li>
+                                    <li>Use multiple devices with the same Google account</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Tab -->
+                <div x-show="settingsTab === 'display'" role="tabpanel" id="display-tab" :aria-hidden="settingsTab !== 'display'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-eye"></i> Display Options
+                            </h5>
+                            <p class="text-muted small mb-0">Customize how securities are displayed</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">View Mode</label>
+                                <div class="btn-group d-block" role="group" aria-label="View mode">
+                                    <button 
+                                        type="button" 
+                                        class="btn" 
+                                        :class="viewMode === 'cards' ? 'btn-primary' : 'btn-outline-primary'"
+                                        @click="setViewMode('cards')"
+                                    >
+                                        <i class="bi bi-grid-3x3-gap-fill"></i> Card View
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="btn"
+                                        :class="viewMode === 'list' ? 'btn-primary' : 'btn-outline-primary'"
+                                        @click="setViewMode('list')"
+                                    >
+                                        <i class="bi bi-list-ul"></i> List View
+                                    </button>
+                                </div>
+                                <div class="form-text">Choose how securities are displayed on the main page.</div>
+                            </div>
+                            
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="hideInactiveSwitch"
+                                    x-model="hideInactive"
+                                    @change="loadSecurities()"
+                                >
+                                <label class="form-check-label" for="hideInactiveSwitch">
+                                    Hide inactive securities
+                                </label>
+                                <div class="form-text">When enabled, securities marked as inactive will not be shown in the main list.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groups Tab -->
+                <div x-show="settingsTab === 'groups'" role="tabpanel" id="groups-tab" :aria-hidden="settingsTab !== 'groups'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-folder"></i> Manage Groups
+                            </h5>
+                            <p class="text-muted small mb-0">Create and manage groups to organize your securities</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Create New Group -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Create New Group</label>
+                                <div class="input-group">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        placeholder="Group name (e.g., Robinhood, Schwab)"
+                                        x-model="newGroupName"
+                                        @keyup.enter="createGroup(newGroupName); newGroupName = ''"
+                                    >
+                                    <button 
+                                        class="btn btn-primary" 
+                                        @click="createGroup(newGroupName); newGroupName = ''"
+                                        :disabled="!newGroupName || newGroupName.trim() === ''"
+                                    >
+                                        <i class="bi bi-plus-circle"></i> Create
+                                    </button>
+                                </div>
+                                <div class="form-text">Groups help you organize securities by account or category</div>
+                            </div>
+
+                            <!-- Existing Groups -->
+                            <div x-show="groupsLoading" class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div x-show="!groupsLoading && groups && groups.length === 0" class="text-center py-4 text-muted">
+                                <i class="bi bi-folder2-open display-1"></i>
+                                <p class="mt-2">No groups yet. Create your first group above.</p>
+                            </div>
+
+                            <div x-show="!groupsLoading && groups && groups.length > 0">
+                                <label class="form-label fw-bold">Your Groups</label>
+                                <div class="list-group">
+                                    <template x-for="group in groups" :key="group.id">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0" x-text="group.name"></h6>
+                                                <small class="text-muted" x-text="'Created ' + formatDate(group.created_at)"></small>
+                                            </div>
+                                            <button 
+                                                class="btn btn-sm btn-outline-danger"
+                                                @click="deleteGroup(group.id)"
+                                                title="Delete group"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div x-show="settingsTab === 'security'" role="tabpanel" id="security-tab" :aria-hidden="settingsTab !== 'security'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-shield-lock"></i> Security Settings
+                            </h5>
+                            <p class="text-muted small mb-0" x-text="userHasPin ? 'Manage your account PIN' : 'Set up a PIN to secure your account'"></p>
+                        </div>
+                        <div class="card-body">
+                            <div x-show="changePinError" class="alert alert-danger" x-text="changePinError"></div>
+                            <div x-show="changePinSuccess" class="alert alert-success" x-text="changePinSuccess"></div>
+                            
+                            <div class="mb-3" x-show="userHasPin">
+                                <label class="form-label">Current PIN</label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    x-model="currentPinChange"
+                                    pattern="[0-9]*"
+                                    inputmode="numeric"
+                                    maxlength="10"
+                                    placeholder="Enter current PIN"
+                                >
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" x-text="userHasPin ? 'New PIN (4-10 digits)' : 'PIN (4-10 digits)'"></label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    x-model="newPinChange"
+                                    pattern="[0-9]*"
+                                    inputmode="numeric"
+                                    maxlength="10"
+                                    :placeholder="userHasPin ? 'Enter new PIN' : 'Enter PIN'"
+                                >
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" x-text="userHasPin ? 'Confirm New PIN' : 'Confirm PIN'"></label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    x-model="confirmPinChange"
+                                    pattern="[0-9]*"
+                                    inputmode="numeric"
+                                    maxlength="10"
+                                    :placeholder="userHasPin ? 'Re-enter new PIN' : 'Re-enter PIN'"
+                                >
+                            </div>
+                            <button type="button" class="btn btn-primary" @click="changePin()" :disabled="changePinLoading">
+                                <span x-show="changePinLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                <span x-text="userHasPin ? 'Change PIN' : 'Set PIN'"></span>
+                            </button>
+                        </div>
+                        
+                        <!-- Remove PIN Section (only shown if user has a PIN) -->
+                        <div x-show="userHasPin" class="mt-4 pt-4 border-top">
+                            <h5 class="mb-3">Remove PIN</h5>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-exclamation-triangle text-warning"></i>
+                                Warning: Removing your PIN will reduce account security.
+                            </p>
+                            
+                            <div x-show="removePinSuccess" class="alert alert-success" x-text="removePinSuccess"></div>
+                            <div x-show="removePinError" class="alert alert-danger" x-text="removePinError"></div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Current PIN</label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    x-model="removePinCurrent"
+                                    pattern="[0-9]*"
+                                    inputmode="numeric"
+                                    maxlength="10"
+                                    placeholder="Enter current PIN to remove"
+                                >
+                            </div>
+                            <button type="button" class="btn btn-danger" @click="removePin()" :disabled="removePinLoading">
+                                <span x-show="removePinLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                Remove PIN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Securities Tab -->
+                <div x-show="settingsTab === 'manage'" role="tabpanel" id="manage-tab" :aria-hidden="settingsTab !== 'manage'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-trash"></i> Manage Securities
+                                    </h5>
+                                    <p class="text-muted small mb-0">Select securities to delete (including all notes)</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <select 
+                                        class="form-select form-select-sm" 
+                                        x-model="bulkMoveTargetGroupId"
+                                        :disabled="selectedSecurities.length === 0"
+                                        style="width: auto; min-width: 150px;"
+                                    >
+                                        <option value="">Select group...</option>
+                                        <option value="null">No Group</option>
+                                        <template x-for="group in groups" :key="group.id">
+                                            <option :value="group.id" x-text="group.name"></option>
+                                        </template>
+                                    </select>
+                                    <button 
+                                        class="btn btn-primary btn-sm"
+                                        @click="bulkMoveToGroup()"
+                                        :disabled="selectedSecurities.length === 0 || bulkMoveTargetGroupId === ''"
+                                    >
+                                        <i class="bi bi-folder-symlink"></i> Move to Group
+                                    </button>
+                                    <button 
+                                        class="btn btn-danger btn-sm"
+                                        @click="bulkDeleteConfirm()"
+                                        :disabled="selectedSecurities.length === 0"
+                                    >
+                                        <i class="bi bi-trash"></i> Delete Selected (<span x-text="selectedSecurities.length"></span>)
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Group Tabs -->
+                            <div x-show="groups?.length > 0" class="mt-3">
+                                <ul class="nav nav-pills nav-sm" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button 
+                                            class="nav-link" 
+                                            :class="{ 'active': selectedManageGroupId === null }"
+                                            @click="selectedManageGroupId = null"
+                                            type="button"
+                                            role="tab">
+                                            All (<span x-text="manageSecurities?.length || 0"></span>)
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button 
+                                            class="nav-link" 
+                                            :class="{ 'active': selectedManageGroupId === 'no-group' }"
+                                            @click="selectedManageGroupId = 'no-group'"
+                                            type="button"
+                                            role="tab">
+                                            No Group (<span x-text="manageSecurities?.filter(s => !s.group_id).length || 0"></span>)
+                                        </button>
+                                    </li>
+                                    <template x-for="group in groups" :key="group.id">
+                                        <li class="nav-item" role="presentation">
+                                            <button 
+                                                class="nav-link" 
+                                                :class="{ 'active': selectedManageGroupId === group.id }"
+                                                @click="selectedManageGroupId = group.id"
+                                                type="button"
+                                                role="tab">
+                                                <span x-text="group.name + ' (' + (manageSecurities?.filter(s => s.group_id === group.id).length || 0) + ')'"></span>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div x-show="manageLoading" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <div x-show="!manageLoading && (!manageSecurities || manageSecurities.length === 0)" class="text-center py-5">
+                                <i class="bi bi-journal-text display-1 text-muted"></i>
+                                <p class="text-muted mt-3">No securities to manage</p>
+                            </div>
+                            
+                            <div x-show="!manageLoading && manageSecurities && manageSecurities.length > 0">
+                                <div class="mb-3">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" @click="selectAllManageSecurities()">
+                                        <i class="bi bi-check-square"></i> Select All
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="deselectAllSecurities()">
+                                        <i class="bi bi-square"></i> Deselect All
+                                    </button>
+                                </div>
+                                
+                                <div class="list-group">
+                                    <template x-for="security in filteredManageSecurities" :key="security.id">
+                                        <label class="list-group-item d-flex align-items-center" style="cursor: pointer;">
+                                            <input 
+                                                type="checkbox" 
+                                                class="form-check-input me-3"
+                                                :value="security.id"
+                                                x-model="selectedSecurities"
+                                            >
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0" x-text="security.symbol"></h6>
+                                                <small class="text-muted" x-text="security.name"></small>
+                                            </div>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stock Data Tab -->
+                <div x-show="settingsTab === 'data'" role="tabpanel" id="data-tab" :aria-hidden="settingsTab !== 'data'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-database"></i> Stock Data Import
+                                </h5>
+                                <button 
+                                    class="btn btn-sm btn-link text-muted p-0" 
+                                    @click="showStockDataInfo = !showStockDataInfo"
+                                    title="What is this?"
+                                >
+                                    <i class="bi bi-question-circle fs-5"></i>
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-0">Import stock data for search autocomplete</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" x-show="showStockDataInfo" x-transition>
+                                <i class="bi bi-info-circle"></i>
+                                <strong>What is this?</strong> This imports a database of stock symbols, names, and information to enable 
+                                search autocomplete when adding new securities. Data is stored locally in your browser and is updated once per day from JNewman's repository.
+                            </div>
+                            
+                            <div x-show="!stockDataImporting">
+                                <div class="mb-3" x-show="stockDataCount > 0">
+                                    <h6>Current Stock Data</h6>
+                                    <p class="mb-2 text-muted small">
+                                        <i class="bi bi-clock-history"></i> Last updated: <span x-text="stockDataDate ? new Date(stockDataDate).toLocaleString() : 'Never'"></span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Total stocks:</strong> <span x-text="stockDataCount.toLocaleString()"></span>
+                                    </p>
+                                </div>
+                                
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button 
+                                        class="btn btn-primary"
+                                        @click="refreshStockData()"
+                                        :disabled="stockDataImporting"
+                                    >
+                                        <i class="bi bi-download"></i> 
+                                        <span x-text="stockDataCount > 0 ? 'Update Stock Data' : 'Import Stock Data'"></span>
+                                    </button>
+                                    <button 
+                                        class="btn btn-outline-primary"
+                                        @click="importSECTickers()"
+                                        :disabled="stockDataImporting"
+                                    >
+                                        <i class="bi bi-building"></i> 
+                                        Import SEC Tickers
+                                    </button>
+                                    <button 
+                                        class="btn btn-outline-danger"
+                                        @click="clearStockData()"
+                                        :disabled="stockDataImporting || stockDataCount === 0"
+                                        x-show="stockDataCount > 0"
+                                    >
+                                        <i class="bi bi-trash"></i> 
+                                        Clear Stock Data
+                                    </button>
+                                </div>
+                                
+                                <p class="text-muted small mt-2">
+                                    <strong>Recommended:</strong> Import JNewman first (includes prices, volumes, sectors), then SEC to add missing companies.<br>
+                                    <strong>JNewman:</strong> <a href="https://github.com/JNewman-cell/Improved-US-Stock-Symbols" target="_blank">~6,400 stocks with daily pricing data</a> - updates existing records<br>
+                                    <strong>SEC:</strong> Official company tickers from SEC.gov (~10,500 companies) - only adds new tickers
+                                </p>
+                            </div>
+                            
+                            <div x-show="stockDataImporting">
+                                <div class="mb-3">
+                                    <p><strong x-text="stockImportMessage"></strong></p>
+                                    <div class="progress">
+                                        <div 
+                                            class="progress-bar progress-bar-striped progress-bar-animated" 
+                                            role="progressbar" 
+                                            :style="`width: ${stockImportProgress}%`"
+                                            :aria-valuenow="stockImportProgress" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100"
+                                            x-text="`${stockImportProgress}%`"
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Import Summary -->
+                            <div x-show="stockImportSummary" x-transition class="alert alert-success mt-3">
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-check-circle"></i> Import Complete!
+                                </h6>
+                                <p class="mb-2" x-html="stockImportSummary"></p>
+                                <button class="btn btn-sm btn-outline-success mt-2" @click="stockImportSummary = null">
+                                    <i class="bi bi-x"></i> Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Tab -->
+                <div x-show="settingsTab === 'import'" role="tabpanel" id="import-tab" :aria-hidden="settingsTab !== 'import'">
+                    <div class="card mb-3">
+                        <div class="card-header bg-white">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-upload"></i> Import Data
+                                </h5>
+                                <button 
+                                    class="btn btn-sm btn-link text-muted p-0" 
+                                    @click="showImportInfo = !showImportInfo"
+                                    title="What is this?"
+                                >
+                                    <i class="bi bi-question-circle fs-5"></i>
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-0">Import from broker export or restore from backup</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" x-show="showImportInfo" x-transition>
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Broker CSV:</strong> Export your positions from your broker as a CSV file. The app will extract symbol, name, quantity, and purchase price.
+                                <br><strong>TickerNotes Backup:</strong> Restore a complete backup including all securities, notes, and groups.
+                            </div>
+                            
+                            <div x-show="!csvImporting">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Select Format</label>
+                                    <select class="form-select" x-model="csvBrokerFormat">
+                                        <option value="tickernotes">TickerNotes Backup (.json)</option>
+                                        <option value="schwab">Charles Schwab (.csv)</option>
+                                        <option value="robinhood">Robinhood (.pdf)</option>
+                                        <option value="generic">Generic CSV (.csv)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3" x-show="csvBrokerFormat !== 'tickernotes'">
+                                    <label class="form-label fw-bold">Assign to Group (Optional)</label>
+                                    <select class="form-select" x-model="csvImportGroupId">
+                                        <option value="">No Group</option>
+                                        <template x-for="group in groups" :key="group.id">
+                                            <option :value="group.id" x-text="group.name"></option>
+                                        </template>
+                                    </select>
+                                    <small class="text-muted">
+                                        All imported securities will be added to this group. 
+                                        <a href="#" @click.prevent="settingsTab = 'groups'" class="text-decoration-none">Create a new group</a> if needed.
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Choose File</label>
+                                    <input 
+                                        type="file" 
+                                        class="form-control" 
+                                        :accept="csvBrokerFormat === 'tickernotes' ? '.json' : (csvBrokerFormat === 'robinhood' ? '.pdf' : '.csv')"
+                                        @change="csvBrokerFormat === 'tickernotes' ? handleJsonFileSelect($event) : (csvBrokerFormat === 'robinhood' ? handlePdfFileSelect($event) : handleCsvFileSelect($event))"
+                                    >
+                                </div>
+                                
+                                <div x-show="csvImportPreview.length > 0 || importJsonPreview" class="mb-3">
+                                    <div x-show="csvImportPreview.length > 0">
+                                        <h6>Preview (<span x-text="csvImportPreview.length"></span> securities found)</h6>
+                                        <div class="alert alert-secondary" style="max-height: 200px; overflow-y: auto;">
+                                            <ul class="list-unstyled mb-0">
+                                                <template x-for="security in csvImportPreview.slice(0, 10)" :key="security.symbol">
+                                                    <li>
+                                                        <strong x-text="security.symbol"></strong> - <span x-text="security.name"></span>
+                                                        <span class="text-muted small" x-show="security.quantity">
+                                                            (<span x-text="security.quantity"></span> shares)
+                                                        </span>
+                                                    </li>
+                                                </template>
+                                                <li x-show="csvImportPreview.length > 10" class="text-muted">
+                                                    ... and <span x-text="csvImportPreview.length - 10"></span> more
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div x-show="importJsonPreview" class="alert alert-info">
+                                        <strong>Ready to import backup:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li><span x-text="importJsonPreview?.securities || 0"></span> securities</li>
+                                            <li><span x-text="importJsonPreview?.notes || 0"></span> notes</li>
+                                            <li><span x-text="importJsonPreview?.groups || 0"></span> groups</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3" x-show="csvImportPreview.length > 0">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            x-model="csvSkipExisting"
+                                            id="csvSkipExisting"
+                                        >
+                                        <label class="form-check-label" for="csvSkipExisting">
+                                            Skip securities that already exist
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3" x-show="csvImportPreview.length > 0 && csvBrokerFormat === 'robinhood' && pdfStatementDate">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            x-model="useStatementDatePrice"
+                                            id="useStatementDatePrice"
+                                        >
+                                        <label class="form-check-label" for="useStatementDatePrice">
+                                            Use statement date (<span x-text="pdfStatementDate"></span>) as tracking start
+                                            <br><small class="text-muted">Note: This captures your holdings on the statement date, not your original purchase date/price</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <button 
+                                        class="btn btn-primary"
+                                        x-show="csvImportPreview.length > 0"
+                                        @click="startCsvImport()"
+                                    >
+                                        <i class="bi bi-upload"></i> Import <span x-text="csvImportPreview.length"></span> Securities
+                                    </button>
+                                    
+                                    <button 
+                                        class="btn btn-primary"
+                                        x-show="importJsonPreview"
+                                        @click="startJsonImport()"
+                                    >
+                                        <i class="bi bi-upload"></i> Import Backup
+                                    </button>
+                                    
+                                    <button 
+                                        class="btn btn-secondary ms-2"
+                                        x-show="csvImportPreview.length > 0 || importJsonPreview"
+                                        @click="clearCsvImport(); importJsonPreview = null"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                                
+                                <div x-show="csvImportError" class="alert alert-danger" x-text="csvImportError"></div>
+                            </div>
+                            
+                            <div x-show="csvImporting || importJsonLoading">
+                                <div class="mb-3">
+                                    <p><strong x-text="csvImporting ? csvImportMessage : importJsonMessage"></strong></p>
+                                    <div class="progress">
+                                        <div 
+                                            class="progress-bar progress-bar-striped progress-bar-animated" 
+                                            role="progressbar" 
+                                            :style="`width: ${csvImporting ? csvImportProgress : importJsonProgress}%`"
+                                            :aria-valuenow="csvImporting ? csvImportProgress : importJsonProgress" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100"
+                                            x-text="`${csvImporting ? csvImportProgress : importJsonProgress}%`"
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div x-show="importJsonSuccess" class="alert alert-success" x-transition>
+                                <i class="bi bi-check-circle"></i> <strong>Import complete!</strong>
+                                <p class="mb-0 mt-2" x-text="importJsonMessage"></p>
+                            </div>
+                            
+                            <div x-show="importJsonError" class="alert alert-danger" x-text="importJsonError" x-transition></div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Export Tab -->
+                <div x-show="settingsTab === 'export'" role="tabpanel" id="export-tab" :aria-hidden="settingsTab !== 'export'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-box-arrow-down"></i> Export/Import All Data
+                            </h5>
+                            <p class="text-muted small mb-0">Backup or transfer your complete portfolio data</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Export Section -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-download"></i> Export Your Data</h6>
+                                <p class="text-muted small">
+                                    Download all your securities, notes, and groups as a JSON file. This creates a complete backup 
+                                    that can be imported later to restore or transfer your data.
+                                </p>
+                                <div class="alert alert-info small">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>What's included:</strong> All securities, purchase info, notes, groups, and timestamps.
+                                    Stock prices are not included (they update automatically).
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        x-model="exportIncludeSettings"
+                                        id="exportIncludeSettings"
+                                    >
+                                    <label class="form-check-label" for="exportIncludeSettings">
+                                        Include display settings (view mode)
+                                    </label>
+                                </div>
+                                <button 
+                                    class="btn btn-primary"
+                                    @click="exportAllData()"
+                                    :disabled="exportLoading"
+                                >
+                                    <span x-show="!exportLoading"><i class="bi bi-download"></i> Download Backup File</span>
+                                    <span x-show="exportLoading"><span class="spinner-border spinner-border-sm me-1"></span> Preparing...</span>
+                                </button>
+                                <div x-show="exportSuccess" class="alert alert-success mt-3" x-transition>
+                                    <i class="bi bi-check-circle"></i> Export complete! File downloaded.
+                                </div>
+                                <div x-show="exportError" class="alert alert-danger mt-3" x-text="exportError" x-transition></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logs Tab -->
+                <div x-show="settingsTab === 'logs'" role="tabpanel" id="logs-tab" :aria-hidden="settingsTab !== 'logs'">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-journal-text"></i> Application Logs
+                            </h5>
+                            <p class="text-muted small mb-0">View app diagnostics and error messages (last 100 entries)</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button 
+                                        class="btn btn-sm btn-outline-primary"
+                                        @click="loadAppLogs()"
+                                        :disabled="logsLoading"
+                                    >
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                                    </button>
+                                    <button 
+                                        class="btn btn-sm btn-outline-danger ms-2"
+                                        @click="clearLogs()"
+                                        :disabled="logsLoading || appLogs.length === 0"
+                                    >
+                                        <i class="bi bi-trash"></i> Clear All Logs
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    <span x-text="appLogs.length"></span> entries
+                                </small>
+                            </div>
+                            
+                            <div x-show="logsLoading" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <div x-show="!logsLoading && appLogs.length === 0" class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> No log entries found.
+                            </div>
+                            
+                            <div x-show="!logsLoading && appLogs.length > 0" style="max-height: 600px; overflow-y: auto;">
+                                <div class="list-group">
+                                    <template x-for="log in appLogs" :key="log.id">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <span 
+                                                    class="badge"
+                                                    :class="{
+                                                        'bg-info': log.level === 'info',
+                                                        'bg-warning text-dark': log.level === 'warn',
+                                                        'bg-danger': log.level === 'error',
+                                                        'bg-secondary': log.level === 'debug'
+                                                    }"
+                                                    x-text="log.level.toUpperCase()"
+                                                ></span>
+                                                <small class="text-muted" x-text="new Date(log.timestamp).toLocaleString()"></small>
+                                            </div>
+                                            <div class="mb-1" x-text="log.message"></div>
+                                            <div x-show="log.data" class="small text-muted font-monospace" style="word-break: break-all;">
+                                                <details>
+                                                    <summary style="cursor: pointer;">View Details</summary>
+                                                    <pre class="mb-0 mt-2" x-text="log.data"></pre>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- MODALS -->
+        
+        <!-- Add Security Modal -->
+        <div class="modal" :class="{ 'show d-block': showAddModal }" x-show="showAddModal" @click.self="closeAddModal()">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Security</h5>
+                        <button type="button" class="btn-close" @click="closeAddModal()" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div x-show="addError" class="alert alert-danger" role="alert" x-text="addError"></div>
+                        
+                        <form @submit.prevent="addSecurity()">
+                            <div class="mb-3">
+                                <label for="securitySearch" class="form-label">Search Securities</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="securitySearch"
+                                    x-model="securitySearch"
+                                    @input.debounce.300ms="searchMasterSecurities()"
+                                    placeholder="Type to search (e.g., AAPL, Apple, IBM)..."
+                                >
+                                <div class="form-text">Search from our database of known securities</div>
+                            </div>
+                            
+                            <div x-show="searchResults && searchResults.length > 0" class="mb-3">
+                                <label class="form-label">Select a security:</label>
+                                <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+                                    <template x-for="result in searchResults" :key="result.symbol">
+                                        <button 
+                                            type="button"
+                                            class="list-group-item list-group-item-action text-start"
+                                            @click="selectMasterSecurity(result)"
+                                        >
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <strong x-text="result.symbol"></strong>
+                                                        <span x-show="result.type === 'etf'" class="badge bg-info text-dark">ETF</span>
+                                                        <span x-show="result.type === 'mutualfund'" class="badge bg-warning text-dark">Mutual Fund</span>
+                                                    </div>
+                                                    <div class="small text-muted" x-text="result.name"></div>
+                                                </div>
+                                                <small class="text-muted" x-text="result.exchange"></small>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newSymbol" class="form-label">Symbol *</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="newSymbol"
+                                    x-model="newSecurity.symbol"
+                                    placeholder="e.g., AAPL"
+                                    required
+                                    style="text-transform: uppercase;"
+                                >
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newName" class="form-label">Name *</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="newName"
+                                    x-model="newSecurity.name"
+                                    placeholder="e.g., Apple Inc."
+                                    required
+                                >
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newNote" class="form-label">Initial Note (optional)</label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="newNote"
+                                    rows="3"
+                                    x-model="newSecurity.note"
+                                    placeholder="Add your first note about this security..."
+                                ></textarea>
+                            </div>
+
+                            <!-- Purchase Information (Optional) -->
+                            <div class="border-top pt-3 mt-3">
+                                <h6 class="text-muted mb-3">
+                                    <i class="bi bi-cash-coin"></i> Purchase Information (optional)
+                                </h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="purchaseDate" class="form-label">Purchase Date</label>
+                                        <input 
+                                            type="date" 
+                                            class="form-control" 
+                                            id="purchaseDate"
+                                            x-model="newSecurity.purchase_date"
+                                        >
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="purchasePrice" class="form-label">Price per Share</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="purchasePrice"
+                                            x-model="newSecurity.purchase_price"
+                                            placeholder="0.00"
+                                            step="0.01"
+                                            min="0"
+                                        >
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="quantity" class="form-label">Quantity</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="quantity"
+                                            x-model="newSecurity.quantity"
+                                            placeholder="0"
+                                            step="0.0001"
+                                            min="0"
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="securityGroup" class="form-label">Group/Account</label>
+                                    <select class="form-select" id="securityGroup" x-model="newSecurity.group_id">
+                                        <option value="">No Group</option>
+                                        <template x-for="group in groups" :key="group.id">
+                                            <option :value="group.id" x-text="group.name"></option>
+                                        </template>
+                                        <option value="new">+ Create New Group</option>
+                                    </select>
+                                </div>
+                                
+                                <div x-show="newSecurity.group_id === 'new'" class="mb-3">
+                                    <label for="newGroupName" class="form-label">New Group Name</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="newGroupName"
+                                        x-model="newGroupName"
+                                        placeholder="e.g., Robinhood, Schwab"
+                                    >
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="closeAddModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" @click="addSecurity()" :disabled="addingLoading">
+                            <span x-show="addingLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Add Security
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showAddModal }" x-show="showAddModal"></div>
+
+        <!-- Delete Note Modal -->
+        <div class="modal" :class="{ 'show d-block': showDeleteModal }" x-show="showDeleteModal" @click.self="showDeleteModal = false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Delete</h5>
+                        <button type="button" class="btn-close" @click="showDeleteModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this note? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="confirmDeleteNote()" :disabled="deleteLoading">
+                            <span x-show="deleteLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showDeleteModal }" x-show="showDeleteModal"></div>
+
+        <!-- Delete Security Modal -->
+        <div class="modal" :class="{ 'show d-block': showDeleteSecurityModal }" x-show="showDeleteSecurityModal" @click.self="showDeleteSecurityModal = false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Delete Security</h5>
+                        <button type="button" class="btn-close btn-close-white" @click="showDeleteSecurityModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete <strong x-text="currentSecurity?.symbol"></strong> and all its notes?</p>
+                        <p class="text-danger mb-0"><strong>This action cannot be undone!</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showDeleteSecurityModal = false">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="deleteSecurity()" :disabled="deleteSecurityLoading">
+                            <span x-show="deleteSecurityLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete Security
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showDeleteSecurityModal }" x-show="showDeleteSecurityModal"></div>
+
+        <!-- Bulk Delete Modal -->
+        <div class="modal" :class="{ 'show d-block': showBulkDeleteModal }" x-show="showBulkDeleteModal" @click.self="showBulkDeleteModal = false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirm Bulk Delete</h5>
+                        <button type="button" class="btn-close btn-close-white" @click="showBulkDeleteModal = false" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete <strong x-text="selectedSecurities.length"></strong> securities and all their notes?</p>
+                        <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+                        <div class="alert alert-warning">
+                            <strong>Securities to be deleted:</strong>
+                            <ul class="mb-0 mt-2">
+                                <template x-for="id in selectedSecurities" :key="id">
+                                    <li x-text="getSecurityById(id)?.symbol + ' - ' + getSecurityById(id)?.name"></li>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showBulkDeleteModal = false">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="bulkDelete()" :disabled="bulkDeleting">
+                            <span x-show="bulkDeleting" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete All Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showBulkDeleteModal }" x-show="showBulkDeleteModal"></div>
+
+        <!-- PIN Setup Modal (for new users) -->
+        <div class="modal" :class="{ 'show d-block': showPinSetupModal }" x-show="showPinSetupModal" style="z-index: 1060;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-shield-lock"></i> Set Up Security PIN</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle"></i> Create a 4-10 digit PIN to secure your account.
+                        </div>
+                        <div x-show="pinSetupError" class="alert alert-danger" x-text="pinSetupError"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Enter PIN (4-10 digits)</label>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                x-model="newPin"
+                                pattern="[0-9]*"
+                                inputmode="numeric"
+                                maxlength="10"
+                                placeholder="Enter 4-10 digits"
+                            >
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm PIN</label>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                x-model="confirmPin"
+                                pattern="[0-9]*"
+                                inputmode="numeric"
+                                maxlength="10"
+                                placeholder="Re-enter PIN"
+                                @keyup.enter="setupPin()"
+                            >
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="setupPin()" :disabled="pinSetupLoading">
+                            <span x-show="pinSetupLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Set PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showPinSetupModal }" x-show="showPinSetupModal" style="z-index: 1055;"></div>
+
+        <!-- PIN Entry Modal (for returning users on new device) -->
+        <div class="modal" :class="{ 'show d-block': showPinEntryModal }" x-show="showPinEntryModal" style="z-index: 1060;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-shield-lock"></i> Enter Your PIN</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle"></i> Please enter your PIN to continue.
+                        </div>
+                        <div x-show="pinEntryError" class="alert alert-danger" x-text="pinEntryError"></div>
+                        <div class="mb-3">
+                            <label class="form-label">PIN</label>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                x-model="entryPin"
+                                pattern="[0-9]*"
+                                inputmode="numeric"
+                                maxlength="10"
+                                placeholder="Enter your PIN"
+                                @keyup.enter="verifyPin()"
+                            >
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="verifyPin()" :disabled="pinEntryLoading">
+                            <span x-show="pinEntryLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Verify PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" :class="{ 'show': showPinEntryModal }" x-show="showPinEntryModal" style="z-index: 1055;"></div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-muted py-3 mt-5" style="font-size: 0.875rem;">
+        <div class="container">
+            <a href="/terms.html" class="text-muted text-decoration-none me-3">Terms of Use</a>
+            <a href="/privacy.html" class="text-muted text-decoration-none">Privacy Policy</a>
+        </div>
+    </footer>
+    
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- App Version -->
+    <script src="/version.js"></script>
+    
+    <!-- Database and Operations (must load before spa.js) -->
+    <script src="/assets/js/db.js"></script>
+    <script src="/assets/js/operations.js"></script>
+    <script src="/assets/js/stock-data.js"></script>
+    <script src="/assets/js/stock-import.js"></script>
+    <script src="/assets/js/cloud-providers.js"></script>
+    <script src="/assets/js/sync.js"></script>
+    
+    <!-- Main App Logic -->
+    <script src="/assets/js/spa.js"></script>
+    
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('[App] Service Worker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('[App] Service Worker registration failed:', error);
+                    });
+            });
+        } else {
+            console.log('[App] Service Workers not supported');
+        }
+    </script>
+</body>
+</html>

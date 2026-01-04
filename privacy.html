@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - TickerNotes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            background: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0d6efd;
+            margin-bottom: 1.5rem;
+        }
+        h2 {
+            color: #495057;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        .last-updated {
+            color: #6c757d;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+        .alert {
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last Updated: January 3, 2026</p>
+
+        <div class="alert alert-info">
+            <strong>Privacy First:</strong> TickerNotes is designed with your privacy as the top priority. All your data stays on your device unless you explicitly choose to enable cloud sync.
+        </div>
+
+        <h2>1. Information We Collect</h2>
+        
+        <h3>Local Data Storage</h3>
+        <p>TickerNotes stores the following information locally in your browser (IndexedDB):</p>
+        <ul>
+            <li>Securities you track (ticker symbols, names, purchase information)</li>
+            <li>Notes you create about your securities</li>
+            <li>Groups/categories you create</li>
+            <li>App settings and preferences</li>
+            <li>Operation logs (for sync functionality)</li>
+            <li>Stock price data (when you manually refresh prices - see below)</li>
+        </ul>
+        <p><strong>This data never leaves your device unless you enable Google Drive sync.</strong></p>
+
+        <h3>Stock Price Data (Optional)</h3>
+        <p>TickerNotes includes an optional stock price lookup feature:</p>
+        <ul>
+            <li><strong>Manual Only:</strong> Price data is only downloaded when you click "Refresh Stock Data"</li>
+            <li><strong>Daily Updates:</strong> The price database is updated once per day</li>
+            <li><strong>Stored Locally:</strong> Downloaded price data is stored in your browser's IndexedDB</li>
+            <li><strong>No Tracking:</strong> We do not track which stocks you look up or when</li>
+            <li><strong>Source:</strong> Price data comes from public market data sources</li>
+        </ul>
+        <p>You are never required to use this feature. The app works fully without it.</p>
+
+        <h3>Google Drive Sync (Optional)</h3>
+        <p>If you choose to enable Google Drive sync, we access:</p>
+        <ul>
+            <li>Your Google account email (for authentication only)</li>
+            <li>Your Google Drive appDataFolder (a special hidden folder for app-specific data)</li>
+        </ul>
+
+        <h2>2. How We Use Your Information</h2>
+        <p>Your data is used solely for:</p>
+        <ul>
+            <li><strong>Portfolio Tracking:</strong> Displaying your securities, notes, and purchase information</li>
+            <li><strong>Data Sync:</strong> Synchronizing your portfolio across your devices (if enabled)</li>
+            <li><strong>Import Features:</strong> Processing CSV and PDF files you upload to extract portfolio data</li>
+        </ul>
+        <p><strong>We do NOT:</strong></p>
+        <ul>
+            <li>Send your data to any servers (the app runs entirely in your browser)</li>
+            <li>Collect analytics or tracking data</li>
+            <li>Share, sell, or rent your personal information</li>
+            <li>Use your data for advertising or marketing</li>
+            <li>Access your data for any purpose</li>
+        </ul>
+
+        <h2>3. Google Drive Integration</h2>
+        <p>When you enable Google Drive sync:</p>
+        
+        <h3>What We Access</h3>
+        <ul>
+            <li><strong>Scope:</strong> <code>drive.appdata</code> - This gives access ONLY to a special app-specific folder</li>
+            <li><strong>Visibility:</strong> This folder is hidden from you in Google Drive's file browser</li>
+            <li><strong>Files Created:</strong> Two files: <code>tickernotes_runlog.jsonl</code> and <code>tickernotes_snapshot.json</code></li>
+            <li><strong>No Access To:</strong> Your other Drive files, Gmail, Calendar, or any other Google services</li>
+        </ul>
+
+        <h3>How to Disconnect</h3>
+        <p>You can disconnect Google Drive at any time:</p>
+        <ol>
+            <li>In TickerNotes: Go to Settings → Sync → Click "Disconnect"</li>
+            <li>In Google: Visit <a href="https://myaccount.google.com/permissions" target="_blank">Google Account Permissions</a> and revoke access to TickerNotes</li>
+        </ol>
+        <p>When you disconnect or revoke access, Google automatically removes the app's data folder.</p>
+
+        <h2>4. Data Security</h2>
+        <ul>
+            <li><strong>Local Storage:</strong> Protected by your browser's security features and your device's access controls</li>
+            <li><strong>In Transit:</strong> All connections use HTTPS encryption</li>
+            <li><strong>Google Drive:</strong> Protected by Google's security infrastructure and your Google account credentials</li>
+            <li><strong>No Server:</strong> Since the app has no backend server, there's no server to be hacked or compromised</li>
+        </ul>
+
+        <h2>5. Data Retention</h2>
+        <ul>
+            <li><strong>Local Data:</strong> Remains in your browser until you clear it or uninstall the app</li>
+            <li><strong>Synced Data:</strong> Remains in your Google Drive appDataFolder until you disconnect or revoke access</li>
+            <li><strong>No Server Data:</strong> We don't store any of your data on servers, so there's nothing for us to retain or delete</li>
+        </ul>
+
+        <h2>6. Your Rights</h2>
+        <p>You have complete control over your data:</p>
+        <ul>
+            <li><strong>Access:</strong> View all your data in the app's Export feature</li>
+            <li><strong>Modify:</strong> Edit or delete any information at any time</li>
+            <li><strong>Export:</strong> Download your complete portfolio as JSON</li>
+            <li><strong>Delete:</strong> Clear all data through Settings → Data Management or by clearing browser storage</li>
+        </ul>
+
+        <h2>7. Third-Party Services</h2>
+        <p>TickerNotes uses these third-party services:</p>
+        <ul>
+            <li><strong>Google Drive API:</strong> For optional cloud sync (Privacy Policy: <a href="https://policies.google.com/privacy" target="_blank">Google Privacy</a>)</li>
+            <li><strong>CDN Services:</strong> Bootstrap, Alpine.js, PDF.js loaded from CDNs for app functionality</li>
+        </ul>
+        <p>These services may have their own privacy policies and data collection practices.</p>
+
+        <h2>8. Children's Privacy</h2>
+        <p>TickerNotes is not intended for use by children under 13. We do not knowingly collect information from children under 13.</p>
+
+        <h2>9. International Users</h2>
+        <p>TickerNotes is a client-side application that runs in your browser. Your data is stored:</p>
+        <ul>
+            <li>Locally on your device (in your geographic location)</li>
+            <li>In your Google Drive (if sync enabled) - stored according to your Google Drive storage location</li>
+        </ul>
+
+        <h2>10. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last Updated" date. Continued use of TickerNotes after changes constitutes acceptance of the updated policy.</p>
+
+        <h2>11. Open Source</h2>
+        <p>TickerNotes is open source. You can review the complete source code to verify our privacy claims at: <a href="https://github.com/awysocki/tickernotes" target="_blank">GitHub Repository</a></p>
+
+        <h2>12. Contact Us</h2>
+        <p>If you have questions about this Privacy Policy or your data, please contact us through our GitHub repository.</p>
+
+        <hr class="my-4">
+        <div class="text-center">
+            <a href="/" class="btn btn-primary">Return to TickerNotes</a>
+            <a href="/terms.html" class="btn btn-outline-secondary">Terms of Use</a>
+        </div>
+    </div>
+</body>
+</html>

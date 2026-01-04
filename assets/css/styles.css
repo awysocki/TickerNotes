@@ -1,0 +1,316 @@
+/* Custom styles for TickerNotes app */
+
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --watch-color: #fd7e14; /* Orange for watch list */
+    /* Color-blind friendly colors for gains/losses */
+    --gain-color: #0d6efd; /* Blue */
+    --loss-color: #fd7e14; /* Orange */
+}
+
+/* Color-blind friendly gain/loss classes */
+.text-gain {
+    color: var(--gain-color) !important;
+}
+
+.text-loss {
+    color: var(--loss-color) !important;
+}
+
+.bg-gain {
+    background-color: var(--gain-color) !important;
+    color: white !important;
+}
+
+.bg-loss {
+    background-color: var(--loss-color) !important;
+    color: white !important;
+}
+
+/* Bordered badge variants for total gain/loss */
+.badge-outline-gain {
+    background-color: transparent !important;
+    color: var(--gain-color) !important;
+    border: 2px solid var(--gain-color) !important;
+    font-weight: 600 !important;
+}
+
+.badge-outline-loss {
+    background-color: transparent !important;
+    color: var(--loss-color) !important;
+    border: 2px solid var(--loss-color) !important;
+    font-weight: 600 !important;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Security cards */
+.security-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-left: 3px solid transparent;
+}
+
+.security-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    border-left-width: 4px;
+}
+
+/* Watch list securities styling */
+.security-watch {
+    border-left-color: var(--watch-color) !important;
+    border-left-width: 3px !important;
+}
+
+.security-watch:hover {
+    border-left-color: var(--watch-color) !important;
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3) !important;
+}
+
+.security-watch h5,
+.security-watch .text-primary {
+    color: var(--watch-color) !important;
+}
+
+/* Inactive securities styling */
+.security-inactive {
+    opacity: 0.6;
+}
+
+.security-inactive .card-title,
+.security-inactive h5 {
+    color: #6c757d !important;
+}
+
+.security-inactive:hover {
+    opacity: 0.8;
+}
+
+/* Security list items */
+.security-list-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+    margin-bottom: 0;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+    position: relative;
+    border-left: 3px solid transparent;
+}
+
+.security-list-item:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.security-list-item:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.security-list-item-alt {
+    background-color: #f8f9fa;
+}
+
+.security-list-item:hover {
+    background-color: #e9ecef;
+    border-left-color: var(--primary-color);
+    border-left-width: 4px;
+    padding-left: calc(1rem - 1px);
+}
+
+.security-list-item.security-watch {
+    border-left-color: var(--watch-color);
+    border-left-width: 3px;
+}
+
+.security-list-item.security-watch:hover {
+    border-left-color: var(--watch-color);
+    background-color: rgba(253, 126, 20, 0.05);
+}
+
+.security-list-item:hover h5,
+.security-list-item:hover .text-primary {
+    color: var(--primary-color) !important;
+}
+
+.list-group-item {
+    padding: 1rem 1.25rem;
+}
+
+/* Note cards */
+.note-card {
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.2s ease;
+}
+
+.note-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+    background-color: #000;
+}
+
+.modal {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+}
+
+.modal.show {
+    opacity: 1;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+/* Loading spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Empty states */
+.display-1 {
+    font-size: 5rem;
+    opacity: 0.3;
+}
+
+/* Form elements */
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Button groups */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Card spacing */
+.card {
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .display-1 {
+        font-size: 3rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Login page */
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Utility classes */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* PWA install prompt */
+.pwa-install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 90%;
+    display: none;
+}
+
+.pwa-install-prompt.show {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Update badge animation */
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
