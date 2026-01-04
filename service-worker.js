@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
     '/index.html',
     '/privacy.html',
     '/terms.html',
+    '/support.html',
     '/manifest.json',
     '/version.js',
     '/assets/css/styles.css',
