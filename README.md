@@ -2,6 +2,12 @@
 
 A Progressive Web App for tracking personal notes on stocks and securities. Pure client-side app with optional cloud sync via Google Drive, OneDrive, or Dropbox.
 
+## Why TickerNotes?
+
+Brokerage platforms like Schwab, Robinhood, and TD Ameritrade let you buy and sell securities, but they don't let you keep private notes about *why* you bought them. Maybe you liked their ads, thought their products were cool, or an AI tool flagged it as a potential winner. Whatever your reasoning, you need a place to track it.
+
+**That's where TickerNotes comes in.** This is purely a note-taking app for your investment ideas and decisions. You can optionally pull in daily stock prices for reference, but there's no real-time quotes or trading functionality. It's just your private notepad for tracking your investment thoughts and strategies.
+
 ## Features
 
 - 📝 **Note Management**: Create, edit, and organize notes for your securities
