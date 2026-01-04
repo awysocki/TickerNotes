@@ -311,29 +311,24 @@ The app uses service workers for offline support and automatic updates. When you
 - Safari 14+
 - Any modern browser with IndexedDB and Service Worker support
 
+## Contributing
+
+Found a bug or have a feature request? Please [open an issue on GitHub](https://github.com/awysocki/TickerNotes/issues).
+
+## Support
+
+For help and support, visit [support.html](/support.html) or check out the [documentation](https://github.com/awysocki/TickerNotes).
+
 ## License
 
 MIT License - See LICENSE file for details
 
-## Roadmap
+## Future Ideas
 
-- [x] Local-first IndexedDB storage
-- [x] Cloud sync (Google Drive with snapshot system)
-- [x] Stock data import (6,400+ symbols with daily pricing)
-- [x] CSV import (Schwab, Robinhood, TD Ameritrade, generic)
-- [x] PDF import (Robinhood statements)
-- [x] PIN protection (4-digit PIN)
-- [x] PWA with offline support
-- [x] Groups/categories with color coding
-- [x] Configurable sync interval (1-60 minutes)
-- [x] Manual runlog reset/compaction
-- [x] Graceful auth expiration handling
-- [x] Multiple security types (stocks, ETFs, mutual funds, bonds, crypto)
-- [x] Price tracking with flexible decimal precision
-- [ ] Export notes to PDF/CSV
-- [ ] Rich text editor for notes
-- [ ] Note attachments (images, files)
-- [ ] Note templates
-- [ ] Dark mode
-- [ ] Mobile app (Capacitor)
-- [ ] Portfolio analytics and performance tracking
+Potential enhancements being considered:
+
+- Export notes to PDF/CSV
+- Rich text editor for notes
+- Note attachments (images, files)
+- Dark mode
+- Portfolio analytics and performance tracking
