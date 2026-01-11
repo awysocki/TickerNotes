@@ -2092,20 +2092,20 @@ function appData() {
                     continue;
                 }
                 
-                // Extract quantity if available
+                // Extract quantity if available (column 3, index 2)
                 let quantity = null;
-                if (fields.length > 3 && fields[3]) {
-                    const qtyStr = fields[3].replace(/,/g, '');
+                if (fields.length > 2 && fields[2]) {
+                    const qtyStr = fields[2].replace(/,/g, '');
                     const qtyNum = parseFloat(qtyStr);
                     if (!isNaN(qtyNum)) {
                         quantity = qtyNum;
                     }
                 }
                 
-                // Extract cost basis (column 10) to calculate purchase price
+                // Extract cost basis (column 10, index 9) to calculate purchase price
                 let purchasePrice = null;
-                if (quantity && fields.length > 10 && fields[10]) {
-                    const costBasisStr = fields[10].replace(/[$,]/g, '');
+                if (quantity && fields.length > 9 && fields[9]) {
+                    const costBasisStr = fields[9].replace(/[$,]/g, '');
                     const costBasis = parseFloat(costBasisStr);
                     if (!isNaN(costBasis) && costBasis > 0) {
                         purchasePrice = Math.round((costBasis / quantity) * 10000) / 10000;
